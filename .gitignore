@@ -1,0 +1,57 @@
+# ====================================================
+# Node.js / Bun (Runtime & Dependencies)
+# ====================================================
+node_modules
+/node_modules
+bun.lockb
+/npm-debug.log*
+/yarn-error.log
+/yarn.lock
+/pnpm-lock.yaml
+
+# ====================================================
+# Zig / Kiro (Build & Dependencies)
+# ====================================================
+# Zig's standard build cache and output directory
+/zig-cache
+/zig-out
+
+# Kiro (Zig package manager) specific dependencies directory
+# This may vary, but 'kiro_modules' is a common placeholder/default
+/kiro_modules
+/kiro-cache
+
+# Build outputs (e.g., executables, .o files)
+*.o
+*.out
+*.exe
+*.bin
+*.a
+*.lib
+*.md
+# ====================================================
+# General Output / Environment / Temporary Files
+# ====================================================
+# Compiled code for distribution
+/dist
+/build
+/out
+/coverage
+/lib
+
+# Environment Variables (Crucial for security)
+.env
+.env.*
+.local
+
+# Temporary / OS / Editor Files
+*.log
+.DS_Store 
+Thumbs.db 
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.history
