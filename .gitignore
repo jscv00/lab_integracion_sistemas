@@ -21,6 +21,7 @@ bun.lockb
 .kiro
 /kiro_modules
 /kiro-cache
+.vscode
 
 # Build outputs (e.g., executables, .o files)
 *.o
