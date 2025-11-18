@@ -18,6 +18,7 @@ bun.lockb
 
 # Kiro (Zig package manager) specific dependencies directory
 # This may vary, but 'kiro_modules' is a common placeholder/default
+.kiro
 /kiro_modules
 /kiro-cache
 
