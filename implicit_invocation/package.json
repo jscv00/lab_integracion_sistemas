@@ -10,7 +10,9 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "fast-check": "^4.3.0",
     "mongodb": "^6.16.0",
+    "twilio": "^5.10.5",
     "wscat": "^6.1.0"
   }
 }

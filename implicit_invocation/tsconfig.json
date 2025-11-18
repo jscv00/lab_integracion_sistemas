@@ -23,6 +23,15 @@
     // Some stricter flags (disabled by default)
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false
+    "noPropertyAccessFromIndexSignature": false,
+
+    // Path mappings for clean imports
+    "baseUrl": ".",
+    "paths": {
+      "@/services/*": ["services/*"],
+      "@/models/*": ["models/*"],
+      "@/config/*": ["config/*"],
+      "@/utils/*": ["utils/*"]
+    }
   }
 }

@@ -1,0 +1,10 @@
+# Utils Directory
+
+This directory contains utility functions and helpers used across the application:
+
+- Logging utilities
+- Error handling helpers
+- Data validation functions
+- Common helper functions
+
+Utility modules will be added here as needed during implementation.

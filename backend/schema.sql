@@ -1,4 +1,13 @@
- -- Tabla de plantas
+-- Tabla de usuarios
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  phone_number VARCHAR(20),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de plantas
 CREATE TABLE IF NOT EXISTS plants (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL,

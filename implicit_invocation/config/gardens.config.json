@@ -1,0 +1,25 @@
+{
+  "gardens": [
+    {
+      "gardenId": "garden-001",
+      "userId": 1,
+      "name": "Huerto Casa Madrid",
+      "latitude": 40.4168,
+      "longitude": -3.7038
+    },
+    {
+      "gardenId": "garden-002",
+      "userId": 2,
+      "name": "Jardín Barcelona",
+      "latitude": 41.3851,
+      "longitude": 2.1734
+    },
+    {
+      "gardenId": "garden-003",
+      "userId": 1,
+      "name": "Huerto Secundario",
+      "latitude": 40.4637,
+      "longitude": -3.7492
+    }
+  ]
+}

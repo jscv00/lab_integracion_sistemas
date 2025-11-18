@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Weather Alerts WebSocket Client Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #2c3e50;
+      }
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+      .connected {
+        background-color: #d4edda;
+        color: #155724;
+      }
+      .disconnected {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+      .alert-box {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 4px;
+      }
+      .alert-type {
+        font-weight: bold;
+        color: #856404;
+      }
+      .timestamp {
+        color: #6c757d;
+        font-size: 0.9em;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      button:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+      }
+      #alerts {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🌱 Weather Alerts WebSocket Client</h1>
+
+      <div id="status" class="status disconnected">Disconnected</div>
+
+      <div>
+        <button id="connectBtn" onclick="connect()">Connect</button>
+        <button id="disconnectBtn" onclick="disconnect()" disabled>
+          Disconnect
+        </button>
+      </div>
+
+      <h2>Received Alerts</h2>
+      <div id="alerts">
+        <p style="color: #6c757d">
+          No alerts received yet. Connect to start receiving weather alerts.
+        </p>
+      </div>
+    </div>
+
+    <script>
+      let ws = null;
+      const statusDiv = document.getElementById("status");
+      const alertsDiv = document.getElementById("alerts");
+      const connectBtn = document.getElementById("connectBtn");
+      const disconnectBtn = document.getElementById("disconnectBtn");
+
+      function connect() {
+        // Connect to the WebSocket server
+        ws = new WebSocket("ws://localhost:3002");
+
+        ws.onopen = () => {
+          console.log("Connected to WebSocket server");
+          statusDiv.textContent = "Connected to ws://localhost:3002";
+          statusDiv.className = "status connected";
+          connectBtn.disabled = true;
+          disconnectBtn.disabled = false;
+        };
+
+        ws.onmessage = (event) => {
+          console.log("Received message:", event.data);
+          const message = JSON.parse(event.data);
+
+          // Check if it's a weather alert
+          if (message.type === "WEATHER_ALERT") {
+            displayAlert(message.data);
+          } else {
+            // Legacy stock price message
+            console.log("Legacy message:", message);
+          }
+        };
+
+        ws.onerror = (error) => {
+          console.error("WebSocket error:", error);
+          statusDiv.textContent = "Connection error";
+          statusDiv.className = "status disconnected";
+        };
+
+        ws.onclose = () => {
+          console.log("Disconnected from WebSocket server");
+          statusDiv.textContent = "Disconnected";
+          statusDiv.className = "status disconnected";
+          connectBtn.disabled = false;
+          disconnectBtn.disabled = true;
+        };
+      }
+
+      function disconnect() {
+        if (ws) {
+          ws.close();
+          ws = null;
+        }
+      }
+
+      function displayAlert(alert) {
+        // Clear "no alerts" message if present
+        if (alertsDiv.querySelector("p")) {
+          alertsDiv.innerHTML = "";
+        }
+
+        const alertBox = document.createElement("div");
+        alertBox.className = "alert-box";
+
+        const alertTypeEmoji = {
+          HIGH_TEMPERATURE: "🌡️",
+          LOW_TEMPERATURE: "❄️",
+          HEAVY_RAIN: "🌧️",
+          STRONG_WIND: "💨",
+        };
+
+        alertBox.innerHTML = `
+                <div class="alert-type">
+                    ${alertTypeEmoji[alert.alertType] || "⚠️"} ${
+          alert.alertType
+        }
+                </div>
+                <div><strong>Garden:</strong> ${alert.gardenName}</div>
+                <div><strong>Metric:</strong> ${alert.metric}</div>
+                <div><strong>Current Value:</strong> ${
+                  alert.currentValue
+                } (Threshold: ${alert.threshold})</div>
+                <div><strong>Affected Plants:</strong> ${alert.affectedPlantNames.join(
+                  ", "
+                )}</div>
+                <div class="timestamp">${new Date(
+                  alert.timestamp
+                ).toLocaleString()}</div>
+            `;
+
+        // Add to top of alerts list
+        alertsDiv.insertBefore(alertBox, alertsDiv.firstChild);
+      }
+
+      // Instructions
+      console.log("=== WebSocket Client Test ===");
+      console.log("1. Make sure the Bun server is running on port 3002");
+      console.log('2. Click "Connect" to establish WebSocket connection');
+      console.log("3. Weather alerts will appear automatically when generated");
+      console.log(
+        "4. You can also see legacy stock price updates in the console"
+      );
+    </script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+# Configuration Directory
+
+This directory contains configuration files for the weather alerts system:
+
+- **gardens.config.json**: Defines the gardens to monitor with their locations and owners
+- **plant-sensitivity-profiles.json**: Defines weather thresholds for different plant types
+
+These files will be created as part of task 11.

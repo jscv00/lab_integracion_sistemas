@@ -1,0 +1,12 @@
+# Services Directory
+
+This directory contains service modules that handle external integrations and business logic:
+
+- **ConfigLoader**: Loads and validates configuration files (gardens.config.json, plant-sensitivity-profiles.json)
+- **WeatherService**: Integrates with Open-Meteo API to fetch weather data
+- **PlantsService**: Integrates with Backend Mi Huerta to fetch plant and user data
+- **AlertEngine**: Evaluates weather conditions against plant sensitivity profiles
+- **NotificationService**: Sends SMS notifications via Twilio
+- **WebSocketServer**: Manages WebSocket connections and broadcasts alerts
+
+Each service will be implemented as a separate module in this directory.

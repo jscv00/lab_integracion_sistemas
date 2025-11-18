@@ -1,0 +1,46 @@
+{
+  "profiles": {
+    "tomato": {
+      "plantType": "tomato",
+      "maxTemperature": 35,
+      "minTemperature": 10,
+      "maxPrecipitation": 20,
+      "maxWindSpeed": 50
+    },
+    "lettuce": {
+      "plantType": "lettuce",
+      "maxTemperature": 25,
+      "minTemperature": 5,
+      "maxPrecipitation": 15,
+      "maxWindSpeed": 40
+    },
+    "carrot": {
+      "plantType": "carrot",
+      "maxTemperature": 28,
+      "minTemperature": 7,
+      "maxPrecipitation": 18,
+      "maxWindSpeed": 45
+    },
+    "pepper": {
+      "plantType": "pepper",
+      "maxTemperature": 32,
+      "minTemperature": 12,
+      "maxPrecipitation": 22,
+      "maxWindSpeed": 48
+    },
+    "cucumber": {
+      "plantType": "cucumber",
+      "maxTemperature": 30,
+      "minTemperature": 15,
+      "maxPrecipitation": 25,
+      "maxWindSpeed": 42
+    },
+    "default": {
+      "plantType": "default",
+      "maxTemperature": 30,
+      "minTemperature": 8,
+      "maxPrecipitation": 18,
+      "maxWindSpeed": 45
+    }
+  }
+}
