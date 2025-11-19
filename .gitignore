@@ -57,3 +57,5 @@ Thumbs.db
 !.vscode/tasks.json
 !.vscode/launch.json
 .history
+
+001_create_users_table.sql
