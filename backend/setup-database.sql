@@ -34,8 +34,8 @@ CREATE INDEX idx_plant_activities_date ON plant_activities(activity_date);
 -- Insertar datos de ejemplo (opcional)
 INSERT INTO plants (user_id, name, type, planted_at, notes) VALUES
   (1, 'Tomate Cherry', 'Hortaliza', '2024-01-15', 'Variedad resistente al calor'),
-  (1, 'Rosa Roja', 'Flor', '2024-02-01', 'Requiere poda regular'),
-  (1, 'Aguacate', 'Árbol', '2023-11-20', 'Plantado desde semilla');
+  (2, 'Rosa Roja', 'Flor', '2024-02-01', 'Requiere poda regular'),
+  (2, 'Aguacate', 'Árbol', '2023-11-20', 'Plantado desde semilla');
 
 INSERT INTO plant_activities (plant_id, activity_type, description, activity_date) VALUES
   (1, 'Riego', 'Riego profundo en la mañana', '2024-11-15'),
