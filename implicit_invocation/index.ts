@@ -177,6 +177,36 @@ async function initializeWeatherAlertsSystem() {
  * Monitor all gardens and generate alerts
  * Requirements: 4.5, 5.4, 5.5, 6.1, 6.2, 7.1, 10.1, 10.6
  */
+// async function monitorGardens(
+//   gardens: Garden[],
+//   alertEngine: AlertEngine,
+//   plantsService: PlantsService,
+//   notificationService: NotificationService,
+//   alertHistoryService: AlertHistoryService
+// ): Promise<void> {
+//   const monitorLogger = logger.child("Monitor");
+//   monitorLogger.info("Starting garden monitoring", { gardens: gardens.length });
+
+//   // Process each garden independently
+//   const results = await Promise.allSettled(
+//     gardens.map((garden) =>
+//       monitorSingleGarden(
+//         garden,
+//         alertEngine,
+//         plantsService,
+//         notificationService,
+//         alertHistoryService
+//       )
+//     )
+//   );
+
+//   // Log summary
+//   const successful = results.filter((r) => r.status === "fulfilled").length;
+//   const failed = results.filter((r) => r.status === "rejected").length;
+
+//   monitorLogger.info("Garden monitoring completed", { successful, failed });
+// }
+
 async function monitorGardens(
   gardens: Garden[],
   alertEngine: AlertEngine,
@@ -187,6 +217,9 @@ async function monitorGardens(
   const monitorLogger = logger.child("Monitor");
   monitorLogger.info("Starting garden monitoring", { gardens: gardens.length });
 
+  // NEW: track which users have already received an SMS in this cycle
+  const notifiedUsers = new Set<number>();
+
   // Process each garden independently
   const results = await Promise.allSettled(
     gardens.map((garden) =>
@@ -195,12 +228,12 @@ async function monitorGardens(
         alertEngine,
         plantsService,
         notificationService,
-        alertHistoryService
+        alertHistoryService,
+        notifiedUsers // 👈 pass it down
       )
     )
   );
 
-  // Log summary
   const successful = results.filter((r) => r.status === "fulfilled").length;
   const failed = results.filter((r) => r.status === "rejected").length;
 
@@ -211,17 +244,119 @@ async function monitorGardens(
  * Monitor a single garden and handle alerts
  * Requirements: 5.4, 5.5, 6.1, 6.2, 7.1, 10.1, 10.6
  */
+// async function monitorSingleGarden(
+//   garden: Garden,
+//   alertEngine: AlertEngine,
+//   plantsService: PlantsService,
+//   notificationService: NotificationService,
+//   alertHistoryService: AlertHistoryService
+// ): Promise<void> {
+//   const monitorLogger = logger.child("Monitor");
+
+//   try {
+//     // Evaluate garden for climate risks
+//     const alerts = await alertEngine.evaluateGarden(garden, (latency) =>
+//       metricsService.recordOpenMeteoLatency(latency)
+//     );
+
+//     if (alerts.length === 0) {
+//       monitorLogger.debug("No alerts generated", { garden: garden.name });
+//       return;
+//     }
+
+//     monitorLogger.info("Alerts generated", {
+//       garden: garden.name,
+//       alertCount: alerts.length,
+//     });
+
+//     // Process each alert
+//     for (const alert of alerts) {
+//       // Record alert in metrics
+//       metricsService.recordAlert(alert.alertType);
+
+//       monitorLogger.info("Processing alert", {
+//         alertId: alert.alertId,
+//         alertType: alert.alertType,
+//         garden: garden.name,
+//       });
+
+//       // Priority 1: Send SMS notification
+//       try {
+//         const user = await plantsService.fetchUser(garden.userId, (latency) =>
+//           metricsService.recordBackendLatency(latency)
+//         );
+//         const smsSent = await notificationService.sendAlert(alert, user);
+//         if (smsSent) {
+//           metricsService.recordSMSSuccess();
+//           monitorLogger.info("SMS sent successfully", {
+//             alertId: alert.alertId,
+//           });
+//         } else {
+//           metricsService.recordSMSFailure();
+//           monitorLogger.warn("SMS not sent", { alertId: alert.alertId });
+//         }
+//       } catch (error) {
+//         metricsService.recordSMSFailure();
+//         monitorLogger.error("Failed to send SMS", error as Error, {
+//           alertId: alert.alertId,
+//         });
+//         // Continue with other notification channels
+//       }
+
+//       // Priority 2: Broadcast via WebSocket (if clients connected)
+//       try {
+//         weatherAlertServer.broadcast(alert);
+//         if (weatherAlertServer.hasConnectedClients()) {
+//           monitorLogger.info("WebSocket broadcast sent", {
+//             alertId: alert.alertId,
+//           });
+//         }
+//       } catch (error) {
+//         monitorLogger.error("Failed to broadcast alert", error as Error, {
+//           alertId: alert.alertId,
+//         });
+//         // Continue with MongoDB persistence
+//       }
+
+//       // Priority 3: Save to MongoDB
+//       try {
+//         const saved = await alertHistoryService.saveAlert(alert);
+//         if (saved) {
+//           monitorLogger.info("Alert saved to MongoDB", {
+//             alertId: alert.alertId,
+//           });
+//         } else {
+//           monitorLogger.warn("Alert not saved to MongoDB", {
+//             alertId: alert.alertId,
+//           });
+//         }
+//       } catch (error) {
+//         monitorLogger.error("Failed to save alert to MongoDB", error as Error, {
+//           alertId: alert.alertId,
+//         });
+//         // Alert has been sent via SMS/WebSocket, so this is not critical
+//       }
+//     }
+//   } catch (error) {
+//     monitorLogger.error("Error monitoring garden", error as Error, {
+//       gardenId: garden.gardenId,
+//       gardenName: garden.name,
+//     });
+//     // Don't throw - continue with other gardens
+//   }
+// }
+
 async function monitorSingleGarden(
   garden: Garden,
   alertEngine: AlertEngine,
   plantsService: PlantsService,
   notificationService: NotificationService,
-  alertHistoryService: AlertHistoryService
+  alertHistoryService: AlertHistoryService,
+  notifiedUsers: Set<number> // 👈 NEW PARAM
 ): Promise<void> {
   const monitorLogger = logger.child("Monitor");
 
   try {
-    // Evaluate garden for climate risks
     const alerts = await alertEngine.evaluateGarden(garden, (latency) =>
       metricsService.recordOpenMeteoLatency(latency)
     );
@@ -236,9 +371,7 @@ async function monitorSingleGarden(
       alertCount: alerts.length,
     });
 
-    // Process each alert
     for (const alert of alerts) {
-      // Record alert in metrics
       metricsService.recordAlert(alert.alertType);
 
       monitorLogger.info("Processing alert", {
@@ -247,27 +380,36 @@ async function monitorSingleGarden(
         garden: garden.name,
       });
 
-      // Priority 1: Send SMS notification
+      // 🔹 Priority 1: Send SMS notification (only once per user per cycle)
       try {
         const user = await plantsService.fetchUser(garden.userId, (latency) =>
           metricsService.recordBackendLatency(latency)
         );
-        const smsSent = await notificationService.sendAlert(alert, user);
-        if (smsSent) {
-          metricsService.recordSMSSuccess();
-          monitorLogger.info("SMS sent successfully", {
+
+        // NEW: if this user already got an SMS this cycle, skip
+        if (notifiedUsers.has(user.id)) {
+          monitorLogger.info("Skipping SMS, user already notified this cycle", {
+            userId: user.id,
             alertId: alert.alertId,
           });
         } else {
-          metricsService.recordSMSFailure();
-          monitorLogger.warn("SMS not sent", { alertId: alert.alertId });
+          const smsSent = await notificationService.sendAlert(alert, user);
+          if (smsSent) {
+            notifiedUsers.add(user.id); // 👈 mark as notified
+            metricsService.recordSMSSuccess();
+            monitorLogger.info("SMS sent successfully", {
+              alertId: alert.alertId,
+            });
+          } else {
+            metricsService.recordSMSFailure();
+            monitorLogger.warn("SMS not sent", { alertId: alert.alertId });
+          }
         }
       } catch (error) {
         metricsService.recordSMSFailure();
         monitorLogger.error("Failed to send SMS", error as Error, {
           alertId: alert.alertId,
         });
-        // Continue with other notification channels
       }
 
       // Priority 2: Broadcast via WebSocket (if clients connected)
